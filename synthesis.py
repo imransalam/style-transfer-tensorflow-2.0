@@ -144,4 +144,4 @@ if __name__=='__main__':
         init_image.assign(clipped)
         if i % 100 == 0:
             utility_functions.io.imsave('out.jpg', utility_functions.convert_to_real_image(init_image.numpy()))
-        print(loss)
+            print("Loss ", loss, " At Iteration # ", i)
