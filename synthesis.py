@@ -81,8 +81,8 @@ def compute_loss(init_image, content_img_content_features, style_img_gram_featur
     init_img_histogram_features = [hist_layer[0] for hist_layer in model_outputs[:params.num_style_layers]]
 
     weight_per_style_layer = 1.0 / float(params.num_style_layers)
-    for content_img_gram_layer, style_img_gram_layer in zip(init_image_gram_features, style_img_gram_features):
-        style_score += weight_per_style_layer * get_content_loss(content_img_gram_layer, style_img_gram_layer)
+    for init_img_gram_layer, style_img_gram_layer in zip(init_image_gram_features, style_img_gram_features):
+        style_score += weight_per_style_layer * get_content_loss(init_img_gram_layer, style_img_gram_layer)
 
     weight_per_content_layer = 1.0 / float(params.num_content_layers)
     for init_img_content_layer, content_img_content_layer in zip(init_img_content_features, content_img_content_features):
