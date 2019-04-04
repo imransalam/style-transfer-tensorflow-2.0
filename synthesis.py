@@ -70,7 +70,7 @@ def hist_loss(source, target):
     loss = get_content_loss(source, target)
     return loss
 
-def compute_loss(init_image, style_img_content_features, style_img_gram_features, style_img_histogram_features):
+def compute_loss(init_image, content_img_content_features, style_img_gram_features, style_img_histogram_features):
     style_score = 0
     content_score = 0
     hist_score = 0
@@ -85,8 +85,8 @@ def compute_loss(init_image, style_img_content_features, style_img_gram_features
         style_score += weight_per_style_layer * get_content_loss(content_img_gram_layer, style_img_gram_layer)
 
     weight_per_content_layer = 1.0 / float(params.num_content_layers)
-    for content_img_content_layer, style_img_content_layer in zip(init_img_content_features, style_img_content_features):
-        content_score += weight_per_content_layer * get_content_loss(content_img_content_layer, style_img_content_layer)
+    for init_img_content_layer, content_img_content_layer in zip(init_img_content_features, content_img_content_features):
+        content_score += weight_per_content_layer * get_content_loss(init_img_content_layer, content_img_content_layer)
 
     weight_per_hist_layer = 1.0 / float(params.num_style_layers)
     for content_img_histogram_layer, style_img_histogram_layer in zip(init_img_histogram_features, style_img_histogram_features):
@@ -124,9 +124,11 @@ if __name__=='__main__':
 
 
     style_img_outputs = model(style_img)
+    content_img_outputs = model(content_img)
+
     style_img_gram_features = [gram_matrix(style_layer[0]) for style_layer in style_img_outputs[:params.num_style_layers]]
     style_img_histogram_features = [hist_layer[0] for hist_layer in style_img_outputs[:params.num_style_layers]]
-    style_img_content_features = [content_layer[0] for content_layer in style_img_outputs[params.num_style_layers:]]
+    content_img_content_features = [content_layer[0] for content_layer in content_img_outputs[params.num_style_layers:]]
 
     init_image = tfe.Variable(content_img.copy(), dtype=tf.float32)
     opt = tf.train.AdamOptimizer(learning_rate=5, beta1=0.99, epsilon=1e-1)
@@ -137,7 +139,7 @@ if __name__=='__main__':
     max_vals = 255 - norm_means
 
     for i in range(params.num_iterations):
-        grads, all_loss = compute_grads(init_image, style_img_content_features, style_img_gram_features, style_img_histogram_features)
+        grads, all_loss = compute_grads(init_image, content_img_content_features, style_img_gram_features, style_img_histogram_features)
         loss = all_loss
         opt.apply_gradients([(grads, init_image)])
         clipped = tf.clip_by_value(init_image, min_vals, max_vals)
